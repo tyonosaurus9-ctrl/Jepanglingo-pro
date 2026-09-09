@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JepangLingo Pro - Eksplorasi Bahasa & Dunia</title>
+    <!-- Tailwind CSS for high-end Duolingo-like aesthetic -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #fdf2f8 0%, #f7f9fa 100%);
+            user-select: none;
+            min-height: 100vh;
+        }
+        .duo-button {
+            transition: all 0.1s ease;
+            box-shadow: 0 5px 0 0 rgba(0, 0, 0, 0.12);
+        }
+        .duo-button:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.12);
+        }
+        .duo-button-secondary {
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 0 #cbd5e1;
+        }
+        .duo-button-secondary:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 0 #cbd5e1;
+        }
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-float {
+            animation: floatSlow 2.5s ease-in-out infinite;
+        }
+        @keyframes pulseHeart {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.35) rotate(-10deg); }
+            100% { transform: scale(1); }
+        }
+        .pulse-heart {
+            animation: pulseHeart 0.4s ease;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="flex flex-col justify-between text-gray-800">
+
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 py-4 px-6 sticky top-0 z-50 shadow-xs">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-pink-500 rounded-2xl flex items-center justify-center text-white text-xl shadow-md animate-float">🌸</div>
+                <span class="text-xl md:text-2xl font-black text-pink-600 tracking-wider">JepangLingo<span class="text-amber-500">Pro</span></span>
+            </div>
+            <!-- Status Bar: Streak, Hearts & XP -->
+            <div class="flex items-center space-x-3 md:space-x-5">
+                <div class="flex items-center space-x-1 font-extrabold text-orange-500 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-2xl shadow-2xs">
+                    <span class="text-base">🔥</span>
+                    <span id="streak-display" class="text-xs md:text-sm">7 Hari</span>
+                </div>
+                <div class="flex items-center space-x-1 font-extrabold text-red-500 bg-red-50 border border-red-200 px-3 py-1.5 rounded-2xl shadow-2xs">
+                    <span class="text-base" id="heart-icon">❤️</span>
+                    <span id="hearts-display" class="text-xs md:text-sm">5</span>
+                </div>
+                <div class="flex items-center space-x-1 font-extrabold text-amber-500 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-2xl shadow-2xs">
+                    <span class="text-base">⚡</span>
+                    <span id="xp-display" class="text-xs md:text-sm">0 XP</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4 md:p-6">
+        <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 md:p-10 relative overflow-hidden">
+            
+            <!-- VIEW 1: HOME / LEVEL SELECTION -->
+            <div id="view-home" class="space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-extrabold uppercase tracking-widest bg-pink-100 text-pink-700 px-3 py-1 rounded-full">Peta Penjelajahan Bumi & Alam Jepang</span>
+                        <h1 class="text-2xl md:text-3xl font-black text-gray-800 mt-1">Pilih Unit Pembelajaran</h1>
+                    </div>
+                    <button onclick="openStatsModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 font-bold text-sm text-gray-700 rounded-2xl transition flex items-center space-x-1 cursor-pointer">
+                        <span>📊 Statistik</span>
+                    </button>
+                </div>
+
+                <div class="space-y-4 pt-2 max-h-[58vh] overflow-y-auto pr-1 custom-scrollbar" id="level-list">
+                    <!-- Dynamic Level Cards injected via JS -->
+                </div>
+            </div>
+
+            <!-- VIEW 2: LESSON CARDS INTRODUCTION -->
+            <div id="view-intro" class="hidden space-y-6">
+                <div class="flex items-center space-x-3">
+                    <button onclick="returnToHome()" class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-2xl flex items-center justify-center font-bold text-gray-600 transition cursor-pointer">✕</button>
+                    <div>
+                        <span class="text-xs font-extrabold uppercase tracking-widest bg-pink-100 text-pink-700 px-3 py-1 rounded-full">Pengenalan Kosakata</span>
+                        <h2 id="intro-title" class="text-xl md:text-2xl font-black text-gray-800 mt-1"></h2>
+                    </div>
+                </div>
+
+                <p class="text-gray-500 font-semibold text-sm">Pahami kosakata dan istilah lingkungan/alam berikut sebelum memulai latihan!</p>
+
+                <div id="vocab-cards-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[46vh] overflow-y-auto p-1 custom-scrollbar">
+                    <!-- Vocab cards injected here -->
+                </div>
+
+                <div class="pt-2 text-center">
+                    <button onclick="startQuizFromIntro()" class="w-full py-4 bg-pink-500 hover:bg-pink-600 text-white font-black text-lg rounded-2xl duo-button cursor-pointer">
+                        Mulai Latihan Kuis 🚀
+                    </button>
+                </div>
+            </div>
+
+            <!-- VIEW 3: QUIZ & EXERCISES -->
+            <div id="view-quiz" class="hidden space-y-6">
+                <!-- Progress Header -->
+                <div class="flex items-center space-x-4">
+                    <button onclick="returnToHome()" class="text-gray-400 hover:text-gray-600 font-black text-lg cursor-pointer">✕</button>
+                    <div class="w-full bg-gray-200 h-3.5 rounded-full overflow-hidden p-0.5 border border-gray-200">
+                        <div id="quiz-progress" class="bg-pink-500 h-full rounded-full transition-all duration-400" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Question Prompt Area -->
+                <div class="space-y-1">
+                    <h3 id="quiz-instruction" class="text-base md:text-lg font-extrabold text-gray-600">Terjemahkan kalimat berikut:</h3>
+                    <div id="quiz-question" class="text-2xl md:text-3xl font-black text-gray-900 py-2"></div>
+                </div>
+
+                <!-- Answer Area: Multiple Choice -->
+                <div id="quiz-options-container" class="space-y-3 pt-2">
+                    <!-- Options injected dynamically -->
+                </div>
+
+                <!-- Answer Area: Word Bank (Arrange) -->
+                <div id="word-bank-container" class="hidden space-y-5 pt-2">
+                    <div id="selected-words" class="min-h-[85px] p-4 border-2 border-dashed border-gray-300 rounded-2xl flex flex-wrap gap-2 items-center bg-gray-50/80 shadow-inner">
+                        <!-- Selected words go here -->
+                    </div>
+                    <div id="available-words" class="flex flex-wrap gap-2 pt-2">
+                        <!-- Available words chips go here -->
+                    </div>
+                </div>
+
+                <!-- Submit / Check Button Area -->
+                <div id="action-area" class="pt-2">
+                    <button id="submit-btn" onclick="checkAnswer()" class="w-full py-4 bg-gray-200 text-gray-400 font-black text-lg rounded-2xl cursor-not-allowed opacity-60" disabled>
+                        Periksa Jawaban
+                    </button>
+                </div>
+            </div>
+
+            <!-- VIEW 4: LESSON COMPLETED -->
+            <div id="view-complete" class="hidden text-center space-y-6 py-6">
+                <div class="w-24 h-24 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center text-5xl mx-auto shadow-inner animate-float">🏆</div>
+                <div class="space-y-2">
+                    <h2 class="text-3xl font-black text-gray-800">Unit Selesai dengan Sempurna!</h2>
+                    <p class="text-gray-500 font-semibold">Luar biasa! Pengetahuan kosakatamu semakin luas. Mendapatkan total <span id="earned-xp" class="text-amber-500 font-extrabold">+100 XP</span>.</p>
+                </div>
+                <div class="bg-pink-50 border border-pink-200 p-4 rounded-2xl max-w-sm mx-auto flex justify-around text-center">
+                    <div>
+                        <div class="text-xs text-gray-500 font-bold">Akurasi</div>
+                        <div class="text-xl font-black text-pink-600">100%</div>
+                    </div>
+                    <div class="border-r border-pink-200"></div>
+                    <div>
+                        <div class="text-xs text-gray-500 font-bold">Bonus Streak</div>
+                        <div class="text-xl font-black text-orange-500">+1 Hari 🔥</div>
+                    </div>
+                </div>
+                <div class="pt-2">
+                    <button onclick="returnToHome()" class="w-full py-4 bg-pink-500 hover:bg-pink-600 text-white font-black text-lg rounded-2xl duo-button cursor-pointer">
+                        Kembali ke Menu Utama
+                    </button>
+                </div>
+            </div>
+
+            <!-- VIEW 5: GAME OVER (OUT OF HEARTS) -->
+            <div id="view-gameover" class="hidden text-center space-y-6 py-6">
+                <div class="w-24 h-24 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-5xl mx-auto shadow-inner animate-pulse">💔</div>
+                <div class="space-y-2">
+                    <h2 class="text-3xl font-black text-red-500">Nyawa Kamu Habis!</h2>
+                    <p class="text-gray-500 font-semibold">Jangan menyerah! Pelajari kembali kartu kosakata alam dan bumi di bawah.</p>
+                </div>
+                <div class="pt-2">
+                    <button onclick="refillHeartsAndHome()" class="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-black text-lg rounded-2xl duo-button cursor-pointer">
+                        Pulihkan Nyawa & Kembali 💖
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="feedback-banner" class="fixed bottom-0 left-0 right-0 p-4 transform translate-y-full transition-transform duration-300 z-50">
+        <div id="feedback-content" class="max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-3xl shadow-2xl border">
+            <div class="flex items-center space-x-4">
+                <div id="feedback-icon" class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-2xl shadow-sm">🎉</div>
+                <div>
+                    <h4 id="feedback-title" class="font-black text-xl text-white">Benar Sekali!</h4>
+                    <p id="feedback-desc" class="text-white/90 text-sm font-semibold"></p>
+                </div>
+            </div>
+            <button onclick="nextQuestion()" class="w-full sm:w-auto px-8 py-3 bg-white font-black text-lg rounded-2xl shadow-md transition active:scale-95 cursor-pointer" id="feedback-btn">
+                Lanjut ➔
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Web Audio API untuk Efek Suara Interaktif
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.12); // G5
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(90, audioCtx.currentTime + 0.3);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.35);
+            } else if (type === 'click') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            }
+        }
+
+        // Database Kosakata Sangat Lengkap: Mengenal Bumi, Alam, Elemen, Kehidupan, & Ekosistem Global
+        const levelsData = [
+            {
+                id: 1,
+                title: "Unit 1: Sapaan, Perkenalan & Keberadaan",
+                desc: "Sapaan harian, menanyakan posisi ('kamu di mana'), dan perkenalan.",
+                color: "pink",
+                vocab: [
+                    { jp: "ご飯", romaji: "Gohan", id: "Nasi / Makanan" },
+                    { jp: "水", romaji: "Mizu", id: "Air" },
+                    { jp: "あなた", romaji: "Anata", id: "Kamu / Anda" },
+                    { jp: "どこ", romaji: "Doko", id: "Di mana" },
+                    { jp: "おはよう", romaji: "Ohayou", id: "Selamat pagi" },
+                    { jp: "ありがとう", romaji: "Arigatou", id: "Terima kasih" }
+                ],
+                questions: [
+                    {
+                        type: "multiple",
+                        prompt: "Apa arti dari kosa kata berikut?",
+                        target: "ご飯 (Gohan)",
+                        options: ["Air", "Nasi / Makanan", "Kamu", "Di mana"],
+                        answer: "Nasi / Makanan"
+                    },
+                    {
+                        type: "multiple",
+                        prompt: "Bagaimana menanyakan 'Di mana' dalam bahasa Jepang?",
+                        target: "Di mana",
+                        options: ["Anata", "Doko", "Mizu", "Gohan"],
+                        answer: "Doko"
+                    },
+                    {
+                        type: "arrange",
+                        prompt: "Susun kalimat untuk menanyakan 'Kamu di mana?':",
+                        words: ["Anata", "wa", "doko", "desu", "ka"],
+                        answer: ["Anata", "wa", "doko", "desu", "ka"]
+                    },
+                    {
+                        type: "multiple",
+                        prompt: "Apa bahasa Jepang untuk 'Air'?",
+                        target: "Air",
+                        options: ["Mizu", "Gohan", "Ohayou", "Arigatou"],
+                        answer: "Mizu"
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "Unit 2: Bentang Alam & Planet Bumi",
+                desc: "Gunung, laut, samudra, benua, langit, hutan, dan atmosfer bumi.",
+                color: "blue",
+                vocab: [
+                    { jp: "地球", romaji: "Chikyuu", id: "Planet Bumi" },
+                    { jp: "山", romaji: "Yama", id: "Gunung" },
+                    { jp: "海", romaji: "Umi", id: "Laut / Samudra" },
+                    { jp: "空", romaji: "Sora", id: "Langit" },
+                    { jp: "森", romaji: "Mori", id: "Hutan" },
+                    { jp: "大陸", romaji: "Tairiku", id: "Benua" }
+                ],
+                questions: [
+                    {
+                        type: "multiple",
+                        prompt: "Apa bahasa Jepang untuk 'Planet Bumi'?",
+                        target: "Planet Bumi",
+                        options: ["Chikyuu", "Yama", "Umi", "Tairiku"],
+                        answer: "Chikyuu"
+                    },
+                    {
+                        type: "multiple",
+                        prompt: "Apa arti dari kosa kata 'Umi' (海)?",
+                        target: "海 (Umi)",
+                        options: ["Gunung", "Laut / Samudra", "Langit", "Hutan"],
+                        answer: "Laut / Samudra"
+                    },
+                    {
+                        type: "arrange",
+                        prompt: "Susun kata untuk membentuk kalimat 'Gunung yang besar di bumi':",
+                        words: ["Ookina", "Yama"],
+                        answer: ["Ookina", "Yama"]
+                    },
+                    {
+                        type: "multiple",
+                        prompt: "Apa terjemahan dari 'Mori' (森)?",
+                        target: "森 (Mori)",
+                        options: ["Hutan", "Langit", "Benua", "Planet Bumi"],
+                        answer: "Hutan"
+                    }
+                ]
+            },
+            {
+                id: 3,
+                title: "Unit 3: Cuaca & Unsur Angkasa Bumi",
+                desc: "Matahari, bulan, bintang, hujan, angin, dan salju.",
+                color: "amber",
+                vocab: [
+                    { jp: "太陽", romaji: "Taiyou", id: "Matahari" },
+                    { jp: "月", romaji: "Tsuki", id: "Bulan" },
+                    { jp: "星", romaji: "Hoshi", id: "Bintang" },
+                    { jp: "雨", romaji: "Ame", id: "Hujan" },
+                    { jp: "風", romaji: "Kaze", id: "Angin" },
+                    { jp: "雪", romaji: "Yuki", id: "Salju" }
+                ],
+                questions: [
+                    {
+                        type: "multiple",
+                        prompt: "Apa terjemahan dari 'Taiyou' (太陽)?",
+                        target: "太陽 (Taiyou)",
+                        options: ["Matahari", "Bulan", "Hujan", "Bintang"],
+                        answer: "Matahari"
+                    },
+                    {
+                        type: "multiple",
+                        prompt: "Bagaimana mengucapkan 'Hujan' dalam bahasa Jepang?",
+                        target: "Hujan",
+                        options: ["Tsuki", "Ame", "Kaze", "Yuki"],
+                        answer: "Ame"
+                    },
+                    {
+                        type: "arrange",
+                        prompt: "Susun kata untuk menyusun 'Langit berbintang':",
+                        words: ["Hoshi", "no", "sora"],
+                        answer: ["Hoshi", "no", "sora"]
+                    },
+                    {
+                        type: "multiple",
+                        prompt: "Apa arti dari 'Hoshi' (星)?",
+                        target: "星 (Hoshi)",
+                        options: ["Bintang", "Angin", "Salju", "Bulan"],
+                        answer: "Bintang"
+                    }
+                ]
+            },
+            {
+                id: 4,
+                title: "Unit 4: Fauna & Ekosistem Makhluk Hidup",
+                desc: "Hewan darat, burung, ikan samudra, hingga beruang liar.",
+                color: "purple",
+                vocab: [
+                    { jp: "動物", romaji: "Doubutsu", id: "Hewan / Binatang" },
+                    { jp: "猫", romaji: "Neko", id: "Kucing" },
+                    { jp: "犬", romaji: "Inu", id: "Anjing" },
+                    { jp: "鳥", romaji: "Tori", id: "Burung" },
+                    { jp: "魚", romaji: "Sakana", id: "Ikan" },
+                    { jp: "熊", romaji: "Kuma", id: "Beruang" }
+                ],
+                questions: [
+                    {
+                        type: "multiple",
+                        prompt: "Apa arti dari kosa kata 'Doubutsu' (動物)?",
+                        target: "動物 (Doubutsu)",
+                        options: ["Hewan / Binatang", "Kucing", "Burung", "Ikan"],
+                        answer: "Hewan / Binatang"
+                    },
+                    {
+                        type: "multiple",
+                        prompt: "Apa bahasa Jepang untuk 'Ikan'?",
+                        target: "Ikan",
+                        options: ["Inu", "Tori", "Sakana", "Kuma"],
+                        answer: "Sakana"
+                    },
+                    {
+                        type: "arrange",
+                        prompt: "Susun kata untuk kalimat 'Anjing yang lucu':",
+                        words: ["Kawaii", "Inu"],
+                        answer: ["Kawaii", "Inu"]
+                    },
+                    {
+                        type: "multiple",
+                        prompt: "Apa arti dari 'Kuma' (熊)?",
+                        target: "熊 (Kuma)",
+                        options: ["Beruang", "Kucing", "Burung", "Anjing"],
+                        answer: "Beruang"
+                    }
+                ]
+            },
+            {
+                id: 5,
+                title: "Unit 5: Flora, Tumbuhan & Ekologi Alam",
+                desc: "Pohon, bunga sakura, rumput hijau, sungai, dan air terjun.",
+                color: "emerald",
+                vocab: [
+                    { jp: "木", romaji: "Ki", id: "Pohon" },
+                    { jp: "桜", romaji: "Sakura", id: "Bunga Sakura" },
+                    { jp: "草", romaji: "Kusa", id: "Rumput" },
+                    { jp: "川", romaji: "Kawa", id: "Sungai" },
+                    { jp: "滝", romaji: "Taki", id: "Air Terjun" },
+                    { jp: "花", romaji: "Hana", id: "Bunga" }
+                ],
+                questions: [
+                    {
+                        type: "multiple",
+                        prompt: "Apa arti dari 'Sakura' (桜)?",
+                        target: "桜 (Sakura)",
+                        options: ["Bunga Sakura", "Pohon", "Sungai", "Rumput"],
+                        answer: "Bunga Sakura"
+                    },
+                    {
+                        type: "multiple",
+                        prompt: "Bagaimana mengucapkan 'Sungai' dalam bahasa Jepang?",
+                        target: "Sungai",
+                        options: ["Kawa", "Ki", "Taki", "Hana"],
+                        answer: "Kawa"
+                    },
+                    {
+                        type: "arrange",
+                        prompt: "Susun kata untuk kalimat 'Sungai yang indah':",
+                        words: ["Kirei", "na", "kawa"],
+                        answer: ["Kirei", "na", "kawa"]
+                    },
+                    {
+                        type: "multiple",
+                        prompt: "Apa terjemahan dari 'Taki' (滝)?",
+                        target: "滝 (Taki)",
+                        options: ["Air Terjun", "Pohon", "Bunga", "Rumput"],
+                        answer: "Air Terjun"
+                    }
+                ]
+            },
+            {
+                id: 6,
+                title: "Unit 6: Geografi, Kota & Peradaban Manusia",
+                desc: "Kota besar, desa, rumah tinggal, sekolah, jalan raya, dan jembatan.",
+                color: "rose",
+                vocab: [
+                    { jp: "街", romaji: "Machi", id: "Kota" },
+                    { jp: "村", romaji: "Mura", id: "Desa" },
+                    { jp: "家", romaji: "Ie", id: "Rumah" },
+                    { jp: "学校", romaji: "Gakkou", id: "Sekolah" },
+                    { jp: "道", romaji: "Michi", id: "Jalan" },
+                    { jp: "橋", romaji: "Hashi", id: "Jembatan" }
+                ],
+                questions: [
+                    {
+                        type: "multiple",
+                        prompt: "Apa arti dari kosa kata 'Gakkou' (学校)?",
+                        target: "学校 (Gakkou)",
+                        options: ["Kota", "Rumah", "Sekolah", "Jalan"],
+                        answer: "Sekolah"
+                    },
+                    {
+                        type: "multiple",
+                        prompt: "Bagaimana mengucapkan 'Desa' dalam bahasa Jepang?",
+                        target: "Desa",
+                        options: ["Machi", "Mura", "Michi", "Hashi"],
+                        answer: "Mura"
+                    },
+                    {
+                        type: "arrange",
+                        prompt: "Susun kata menjadi ungkapan 'Pergi ke sekolah':",
+                        words: ["Gakkou", "e", "iku"],
+                        answer: ["Gakkou", "e", "iku"]
+                    },
+                    {
+                        type: "multiple",
+                        prompt: "Apa terjemahan dari 'Hashi' (橋)?",
+                        target: "橋 (Hashi)",
+                        options: ["Jembatan", "Jalan", "Rumah", "Kota"],
+                        answer: "Jembatan"
+                    }
+                ]
+            }
+        ];
+
+        // State Global Aplikasi
+        let currentHearts = 5;
+        let currentXP = 0;
+        let currentStreak = 7;
+        let activeLevelIndex = 0;
+        let currentQuestionIndex = 0;
+        let selectedOption = null;
+        let userArrangedWords = [];
+        let availableWordPool = [];
+
+        // Inisialisasi Tampilan Awal
+        window.onload = function() {
+            renderHomeLevels();
+            updateStatusDisplay();
+        };
+
+        function updateStatusDisplay() {
+            document.getElementById('hearts-display').innerText = currentHearts;
+            document.getElementById('xp-display').innerText = currentXP + ' XP';
+            document.getElementById('streak-display').innerText = currentStreak + ' Hari';
+        }
+
+        function renderHomeLevels() {
+            const container = document.getElementById('level-list');
+            container.innerHTML = '';
+            
+            levelsData.forEach((lvl, idx) => {
+                const card = document.createElement('div');
+                card.className = "flex items-center justify-between p-5 bg-white border-2 border-gray-200 rounded-3xl hover:border-pink-400 hover:bg-pink-50/40 transition-all cursor-pointer shadow-sm group";
+                card.onclick = () => {
+                    playSound('click');
+                    openLevelIntro(idx);
+                };
+                card.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <div class="w-14 h-14 bg-pink-500 text-white rounded-2xl flex items-center justify-center font-black text-2xl shadow-md group-hover:scale-105 transition-transform">
+                            ${idx + 1}
+                        </div>
+                        <div>
+                            <span class="text-xs font-black uppercase text-pink-600 tracking-wider">Level ${idx + 1}</span>
+                            <h3 class="font-extrabold text-lg text-gray-800">${lvl.title}</h3>
+                            <p class="text-xs text-gray-500 font-semibold mt-0.5">${lvl.desc}</p>
+                        </div>
+                    </div>
+                    <div class="bg-pink-500 text-white font-black text-sm px-5 py-2.5 rounded-2xl shadow-sm group-hover:bg-pink-600 transition">
+                        Mulai ➔
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openLevelIntro(index) {
+            activeLevelIndex = index;
+            const lvl = levelsData[index];
+            
+            document.getElementById('intro-title').innerText = lvl.title;
+            const vocabContainer = document.getElementById('vocab-cards-container');
+            vocabContainer.innerHTML = '';
+
+            lvl.vocab.forEach(v => {
+                const vCard = document.createElement('div');
+                vCard.className = "p-4 bg-gray-50/80 border border-gray-200 rounded-2xl flex flex-col space-y-1 hover:border-pink-300 hover:bg-white transition-all shadow-2xs";
+                vCard.innerHTML = `
+                    <div class="text-2xl font-black text-pink-600">${v.jp}</div>
+                    <div class="text-xs font-extrabold text-gray-700">${v.romaji}</div>
+                    <div class="text-xs text-gray-500 font-semibold">${v.id}</div>
+                `;
+                vocabContainer.appendChild(vCard);
+            });
+
+            switchView('view-intro');
+        }
+
+        function startQuizFromIntro() {
+            playSound('click');
+            currentQuestionIndex = 0;
+            switchView('view-quiz');
+            loadQuestion();
+        }
+
+        function switchView(viewId) {
+            ['view-home', 'view-intro', 'view-quiz', 'view-complete', 'view-gameover'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        function loadQuestion() {
+            const lvl = levelsData[activeLevelIndex];
+            const q = lvl.questions[currentQuestionIndex];
+            
+            // Progress bar update
+            const progressPct = ((currentQuestionIndex) / lvl.questions.length) * 100;
+            document.getElementById('quiz-progress').style.width = progressPct + '%';
+
+            document.getElementById('quiz-question').innerText = q.target || q.prompt;
+            if(q.target) {
+                document.getElementById('quiz-instruction').innerText = q.prompt;
+            } else {
+                document.getElementById('quiz-instruction').innerText = "Susun potongan kata berikut menjadi benar:";
+            }
+
+            const optionsContainer = document.getElementById('quiz-options-container');
+            const wordBankContainer = document.getElementById('word-bank-container');
+            
+            optionsContainer.innerHTML = '';
+            selectedOption = null;
+            userArrangedWords = [];
+            setSubmitButtonState(false);
+
+            if (q.type === 'multiple') {
+                optionsContainer.classList.remove('hidden');
+                wordBankContainer.classList.add('hidden');
+
+                q.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left p-4 rounded-2xl border-2 border-gray-200 hover:border-pink-400 hover:bg-pink-50/50 font-bold text-gray-700 transition flex items-center justify-between cursor-pointer shadow-2xs";
+                    btn.innerHTML = `<span class="text-base">${opt}</span> <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center"></div>`;
+                    btn.onclick = () => {
+                        playSound('click');
+                        selectMultipleOption(btn, opt);
+                    };
+                    optionsContainer.appendChild(btn);
+                });
+            } else if (q.type === 'arrange') {
+                optionsContainer.classList.add('hidden');
+                wordBankContainer.classList.remove('hidden');
+
+                // Shuffle words for arrangement
+                availableWordPool = [...q.words].sort(() => Math.random() - 0.5);
+                renderWordPool();
+            }
+        }
+
+        function selectMultipleOption(element, val) {
+            const container = document.getElementById('quiz-options-container');
+            Array.from(container.children).forEach(child => {
+                child.className = "w-full text-left p-4 rounded-2xl border-2 border-gray-200 hover:border-pink-400 hover:bg-pink-50/50 font-bold text-gray-700 transition flex items-center justify-between cursor-pointer shadow-2xs";
+                child.lastElementChild.className = "w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center";
+                child.lastElementChild.innerHTML = "";
+            });
+
+            element.className = "w-full text-left p-4 rounded-2xl border-2 border-pink-500 bg-pink-50 font-bold text-pink-900 transition flex items-center justify-between shadow-xs";
+            element.lastElementChild.className = "w-6 h-6 rounded-full bg-pink-500 border-2 border-pink-500 flex items-center justify-center text-white text-xs font-black";
+            element.lastElementChild.innerHTML = "✓";
+
+            selectedOption = val;
+            setSubmitButtonState(true);
+        }
+
+        function renderWordPool() {
+            const selectedContainer = document.getElementById('selected-words');
+            const availableContainer = document.getElementById('available-words');
+
+            selectedContainer.innerHTML = '';
+            availableContainer.innerHTML = '';
+
+            if (userArrangedWords.length === 0) {
+                selectedContainer.innerHTML = '<span class="text-gray-400 text-sm font-semibold italic">Ketuk pilihan kata di bawah untuk menyusun kalimat...</span>';
+            } else {
+                userArrangedWords.forEach((word, idx) => {
+                    const chip = document.createElement('button');
+                    chip.className = "px-4 py-2.5 bg-white border-2 border-gray-300 shadow-xs rounded-xl font-bold text-gray-700 hover:bg-red-50 hover:border-red-300 transition cursor-pointer";
+                    chip.innerText = word;
+                    chip.onclick = () => {
+                        playSound('click');
+                        removeWordFromSelected(idx);
+                    };
+                    selectedContainer.appendChild(chip);
+                });
+            }
+
+            availableWordPool.forEach((word, idx) => {
+                const chip = document.createElement('button');
+                chip.className = "px-4 py-2.5 bg-white border-2 border-gray-300 shadow-xs rounded-xl font-bold text-gray-700 hover:bg-pink-50 hover:border-pink-300 transition cursor-pointer";
+                chip.innerText = word;
+                chip.onclick = () => {
+                    playSound('click');
+                    addWordToSelected(idx);
+                };
+                availableContainer.appendChild(chip);
+            });
+
+            setSubmitButtonState(userArrangedWords.length > 0);
+        }
+
+        function addWordToSelected(index) {
+            const word = availableWordPool.splice(index, 1)[0];
+            userArrangedWords.push(word);
+            renderWordPool();
+        }
+
+        function removeWordFromSelected(index) {
+            const word = userArrangedWords.splice(index, 1)[0];
+            availableWordPool.push(word);
+            renderWordPool();
+        }
+
+        function setSubmitButtonState(enabled) {
+            const btn = document.getElementById('submit-btn');
+            if (enabled) {
+                btn.disabled = false;
+                btn.className = "w-full py-4 bg-pink-500 hover:bg-pink-600 text-white font-black text-lg rounded-2xl duo-button cursor-pointer opacity-100";
+            } else {
+                btn.disabled = true;
+                btn.className = "w-full py-4 bg-gray-200 text-gray-400 font-black text-lg rounded-2xl cursor-not-allowed opacity-60 shadow-none";
+            }
+        }
+
+        function checkAnswer() {
+            const lvl = levelsData[activeLevelIndex];
+            const q = lvl.questions[currentQuestionIndex];
+            let isCorrect = false;
+
+            if (q.type === 'multiple') {
+                if (selectedOption === q.answer) isCorrect = true;
+            } else if (q.type === 'arrange') {
+                if (JSON.stringify(userArrangedWords) === JSON.stringify(q.answer)) isCorrect = true;
+            }
+
+            if (isCorrect) {
+                playSound('correct');
+            } else {
+                playSound('wrong');
+            }
+
+            showFeedback(isCorrect, q.answer);
+        }
+
+        function showFeedback(isCorrect, correctAnswer) {
+            const banner = document.getElementById('feedback-banner');
+            const content = document.getElementById('feedback-content');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const desc = document.getElementById('feedback-desc');
+            const btn = document.getElementById('feedback-btn');
+
+            banner.classList.remove('translate-y-full');
+
+            if (isCorrect) {
+                content.className = "max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-3xl shadow-2xl bg-pink-500 border border-pink-400 text-white";
+                icon.innerText = "🌸";
+                title.innerText = "Luar Biasa, Benar!";
+                desc.innerText = "Jawabanmu tepat sekali. Wawasan duniamu semakin luas!";
+                btn.className = "w-full sm:w-auto px-8 py-3 bg-white text-pink-600 font-black text-lg rounded-2xl shadow-md transition active:scale-95 cursor-pointer";
+                currentXP += 25;
+            } else {
+                content.className = "max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-3xl shadow-2xl bg-red-500 border border-red-400 text-white";
+                icon.innerText = "❌";
+                title.innerText = "Kurang Tepat!";
+                desc.innerText = "Jawaban yang benar adalah: " + (Array.isArray(correctAnswer) ? correctAnswer.join(" ") : correctAnswer);
+                btn.className = "w-full sm:w-auto px-8 py-3 bg-white text-red-600 font-black text-lg rounded-2xl shadow-md transition active:scale-95 cursor-pointer";
+                currentHearts--;
+                
+                // Efek denyut pada ikon hati
+                const heartDisplay = document.getElementById('hearts-display');
+                heartDisplay.classList.add('pulse-heart');
+                setTimeout(() => heartDisplay.classList.remove('pulse-heart'), 400);
+            }
+
+            updateStatusDisplay();
+        }
+
+        function nextQuestion() {
+            playSound('click');
+            document.getElementById('feedback-banner').classList.add('translate-y-full');
+
+            if (currentHearts <= 0) {
+                switchView('view-gameover');
+                return;
+            }
+
+            const lvl = levelsData[activeLevelIndex];
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < lvl.questions.length) {
+                loadQuestion();
+            } else {
+                document.getElementById('earned-xp').innerText = "+" + (lvl.questions.length * 25) + " XP";
+                switchView('view-complete');
+            }
+        }
+
+        function returnToHome() {
+            playSound('click');
+            document.getElementById('feedback-banner').classList.add('translate-y-full');
+            switchView('view-home');
+        }
+
+        function refillHeartsAndHome() {
+            playSound('click');
+            currentHearts = 5;
+            updateStatusDisplay();
+            switchView('view-home');
+        }
+
+        function openStatsModal() {
+            playSound('click');
+            alert("📊 Statistik Belajar:\n- Streak: " + currentStreak + " Hari\n- Total XP: " + currentXP + " XP\n- Sisa Nyawa: " + currentHearts + " ❤️\n- Total Unit Alam, Bumi & Peradaban: " + levelsData.length + " Unit");
+        }
+    </script>
+
+</body>
+</html>
